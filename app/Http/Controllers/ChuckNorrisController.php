@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ChuckNorris;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
 
 class ChuckNorrisController extends Controller
@@ -17,15 +14,20 @@ class ChuckNorrisController extends Controller
      */
     public function index(): JsonResponse
     {
-        $unsorted = request('emails');
-        $domainSorted = $this->domainSort($unsorted);
+        if (request('emails') && $this->getJoke()) {
+            $unsortedList = request('emails');
+            $domainSorted = $this->domainSort($unsortedList);
+            $joke = $this->getJoke();
 
-        return response()->json(json_encode(
-            [
-                "emailList" => $domainSorted,
-                'joke' => $this->getJoke()
-            ]
-        ));
+            return response()->json(json_encode(
+                [
+                    "emailList" => $domainSorted,
+                    'joke' => $joke
+                ]
+            ));
+        } else {
+            return response()->json('Server error occurred!', 400);
+        }
     }
 
     protected function domainSort(array $arr): array
@@ -45,9 +47,12 @@ class ChuckNorrisController extends Controller
         return $myArray;
     }
 
-    protected function getJoke(): string
+    protected function getJoke(): ?string
     {
-        $call = Http::get('http://api.icndb.com/jokes/random')->json();
-        return $call['value']['joke'];
+       if(Http::get('http://api.icndb.com/jokes/random')) {
+           $call = Http::get('http://api.icndb.com/jokes/random')->json();
+           return $call['value']['joke'];
+       }
+       return null;
     }
 }
