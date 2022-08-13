@@ -10,7 +10,7 @@
                 {{ errorMessage }}
             </div>
             <div v-if="responseData && !errorMessage">
-                <p>Joke was successfully scheduled for sending to following emails (sorted by domain name):</p>
+                <p>Joke was successfully scheduled for sending to following emails (sorted by domain name/name part):</p>
                 <ul v-for="email in finalEmailList">
                     <li>{{ email }}</li>
                 </ul>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessJokeEmail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 
@@ -14,14 +15,16 @@ class ChuckNorrisController extends Controller
      */
     public function index(): JsonResponse
     {
-        if (request('emails') && $this->getJoke()) {
-            $unsortedList = request('emails');
-            $domainSorted = $this->domainSort($unsortedList);
-            $joke = $this->getJoke();
+        if (request('emails') && $joke = $this->getJoke()) {
+            $unsortedEmailList = request('emails');
+            $emailsSortedByDomain = $this->sortEmails($unsortedEmailList);
+            $emailsSortedByDomain = array_values($emailsSortedByDomain);
+
+            ProcessJokeEmail::dispatch($emailsSortedByDomain, $joke);
 
             return response()->json(json_encode(
                 [
-                    "emailList" => $domainSorted,
+                    "emailList" => $emailsSortedByDomain,
                     'joke' => $joke
                 ]
             ));
@@ -30,21 +33,19 @@ class ChuckNorrisController extends Controller
         }
     }
 
-    protected function domainSort(array $arr): array
+    protected function sortEmails(array $arr): array
     {
-        $myArray = array_unique($arr);
-        usort($myArray, function($a, $b){
-            preg_match_all("/(.*)@(.*)\./", $a, $m1);
-            preg_match_all("/(.*)@(.*)\./", $b, $m2);
-
-            if(($cmp = strcmp($m1[2][0], $m2[2][0])) == 0) {
-                return strcmp($m1[1][0], $m2[1][0]);
-            } else {
-                return ($cmp < 0 ? -1 : 1);
-            }
-
-        });
-        return $myArray;
+        $emails = array_unique($arr);
+        $splitArray = [];
+        foreach ($emails as $email) {
+            $splitEmail = explode("@", $email);
+            $pair = ['name' => $splitEmail[0], 'domain' => $splitEmail[1]];
+            array_push($splitArray, $pair);
+        }
+        $collection = collect($splitArray)->sortBy('name')->sortBy('domain');
+        return $collection->map(function ($item){
+           return $item['name'] . "@" . $item['domain'];
+        })->toArray();
     }
 
     protected function getJoke(): ?string
