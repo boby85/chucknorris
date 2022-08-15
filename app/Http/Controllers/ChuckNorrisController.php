@@ -24,7 +24,7 @@ class ChuckNorrisController extends Controller
 
             return response()->json(json_encode(
                 [
-                    "emailList" => $emailsSortedByDomain,
+                    'emailList' => $emailsSortedByDomain,
                     'joke' => $joke
                 ]
             ));
@@ -38,13 +38,13 @@ class ChuckNorrisController extends Controller
         $emails = array_unique($arr);
         $splitArray = [];
         foreach ($emails as $email) {
-            $splitEmail = explode("@", $email);
+            $splitEmail = explode('@', $email);
             $pair = ['name' => $splitEmail[0], 'domain' => $splitEmail[1]];
             array_push($splitArray, $pair);
         }
         $collection = collect($splitArray)->sortBy('name')->sortBy('domain');
         return $collection->map(function ($item){
-           return $item['name'] . "@" . $item['domain'];
+           return $item['name'] . '@' . $item['domain'];
         })->toArray();
     }
 

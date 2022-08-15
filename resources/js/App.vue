@@ -2,7 +2,7 @@
     <div class="container">
         <div class="content">
             <div class="emails">
-                <label for="emailList">Please add your email addresses below, one address per line:</label>
+                <label> Please add your email addresses below, one address per line:</label>
                 <textarea class="form-control" id="emailList" rows="10" v-model.trim="emailList"></textarea>
                 <button @click="sendJokes" type="button" class="btn btn-primary" :disabled="isLoading">{{ isLoading ? 'Sending please wait...' : 'Send' }}</button>
             </div>
@@ -83,9 +83,9 @@ export default {
         },
         formatData() {
             let jsonObj = JSON.parse(this.responseData.data);
-            if (jsonObj['emailList'] && jsonObj['joke']) {      // check if we get expected format
-                this.finalEmailList = jsonObj['emailList'];
-                this.joke = jsonObj['joke'];
+            if (jsonObj.emailList && jsonObj.joke) {      // check if we get expected format
+                this.finalEmailList = jsonObj.emailList;
+                this.joke = jsonObj.joke;
             } else {
                 this.errorMessage = 'Wrong data received from server! Please try again later.'
             }
